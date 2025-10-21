@@ -1,6 +1,13 @@
 # Prerequisites
 *.d
 
+#CMAKE
+CMakeFiles/
+CMakeLists.txt.user
+
+#build
+build/
+
 # Compiled Object files
 *.slo
 *.lo
