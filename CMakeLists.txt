@@ -11,6 +11,13 @@ set(HEADERS
   include/unpack.hpp
   include/types.hpp
   include/scan.hpp
+  include/hasher.hpp
+  include/writer.hpp
+  include/duplicateresolver.hpp
+  include/filescomparer.hpp
+  include/archiver.hpp
+  include/reader.hpp
+  include/utils.hpp
 )
 
 add_library(core
@@ -18,13 +25,12 @@ add_library(core
   src/unpack.cpp
   src/scan.cpp
   src/hasher.cpp
-  include/hasher.hpp
-  include/deduplicator.h
   src/duplicateresolver.cpp
-  include/duplicateresolver.h
-  include/filescomparer.h
   src/filescomparer.cpp
-  include/executor.h
+  src/archiver.cpp
+  src/writer.cpp
+  src/reader.cpp
+  utils.cpp
 )
 target_sources(core
   PUBLIC
@@ -42,7 +48,6 @@ if (BUILD_TESTS)
   
   FetchContent_Declare(
     googletest
-    # URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
     GIT_REPOSITORY https://github.com/google/googletest.git
     GIT_TAG v1.14.0
   )

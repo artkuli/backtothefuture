@@ -1,4 +1,4 @@
-#include "filescomparer.h"
+#include "filescomparer.hpp"
 
 #include <fstream>
 #include <vector>
