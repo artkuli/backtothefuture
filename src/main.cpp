@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
             std::filesystem::path in = std::filesystem::path(argv[2]);
             std::filesystem::path out= std::filesystem::path(argv[3]);
 
-            return Packager::pack(in, out);
+            return packager::pack(in, out);
         } else if (cmd == kUnpackCmd){
             if (argc != 4) {
                 std::cerr << "unpack needs <archive.bttf> <output_dir>\n";

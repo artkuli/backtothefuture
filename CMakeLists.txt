@@ -17,6 +17,14 @@ add_library(core
   src/pack.cpp
   src/unpack.cpp
   src/scan.cpp
+  src/hasher.cpp
+  include/hasher.hpp
+  include/deduplicator.h
+  src/duplicateresolver.cpp
+  include/duplicateresolver.h
+  include/filescomparer.h
+  src/filescomparer.cpp
+  include/executor.h
 )
 target_sources(core
   PUBLIC

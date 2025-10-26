@@ -1,7 +1,7 @@
 #include "scan.hpp"
 #include <iostream>
-
-const u_int64_t kMaxFileSize = 2ull * 1024 * 1024 * 1024; // 2GB
+#include <algorithm>
+#include <unordered_map>
 
 uint32_t perms_to_bits(std::filesystem::perms p){
     using P = std::filesystem::perms;
@@ -23,7 +23,12 @@ std::filesystem::perms bits_to_perms(uint32_t b){
     return p;
 }
 
-void FsScanner::scan(const std::filesystem::path &root, std::vector<DirEntry> &outputDirs, std::vector<ScannedFile> &outputFiles)
+FsScanner::FsScanner(uint64_t maxFileSize) : m_maxFileSize(maxFileSize)
+{
+
+}
+
+void FsScanner::scan(const std::filesystem::path &root, std::vector<DirEntry> &outputDirs, std::vector<FileEntry> &outputFiles, std::unordered_map<uint64_t, std::vector<size_t>>& filesBySize)
 {
     if (!std::filesystem::exists(root) || !std::filesystem::is_directory(root)) {
         throw std::runtime_error("Invalid path: " + root.string());
@@ -49,15 +54,16 @@ void FsScanner::scan(const std::filesystem::path &root, std::vector<DirEntry> &o
             }
             outputDirs.push_back(std::move(de));
         } else if (it->is_regular_file(ec)) {
-            ScannedFile file;
+            FileEntry file;
             file.relativePath = std::filesystem::relative(path, root).generic_string();
+            file.fullPath = path.string();
             if (file.relativePath.empty())
                 continue;
             file.size = (uint64_t)std::filesystem::file_size(path, ec);
             if (ec)
                 throw std::runtime_error("Cannot get size: " + path.string());
 
-            if (file.size > kMaxFileSize)
+            if (file.size > m_maxFileSize)
                 throw std::runtime_error("File exceeds 2GB: " + path.string());
             try {
                 file.permissions = perms_to_bits(std::filesystem::status(path).permissions());
@@ -65,6 +71,7 @@ void FsScanner::scan(const std::filesystem::path &root, std::vector<DirEntry> &o
                 file.permissions = 0;
             }
             outputFiles.push_back(std::move(file));
+            filesBySize[file.size].push_back(outputFiles.size() - 1);
         }
         else {
             std::cerr << "Ignoring " << path.string() << " is not regular file or directory"<< std::endl;
