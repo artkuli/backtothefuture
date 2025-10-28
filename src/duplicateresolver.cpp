@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <future>
+#include <optional>
 
 constexpr uint64_t kNoHashSentinel = 0;
 
@@ -16,16 +17,23 @@ DuplicateResolver::DuplicateResolver(const Config& config, IFilesComparer &cfile
 
 void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vector<FileInfo> &files, const std::unordered_map<uint64_t, std::vector<size_t> > &filesBySize, std::vector<BlobInfo>& blobs)
 {
+    auto makeBlobInfo = [&](const FileInfo& f, std::optional<uint64_t> h = std::nullopt) -> size_t {
+        BlobInfo info{};
+        info.size   = f.size;
+        info.source = f.relativePath;
+        if (h) {
+            info.hash64 = *h;
+        }
+        blobs.push_back(std::move(info));
+        return blobs.size() - 1;
+    };
+
     for (auto& keyValue : filesBySize) {
         auto &indices = keyValue.second;
         if (indices.size() == 1)
         {
             auto& file = files[indices[0]];
-            BlobInfo info;
-            info.size = file.size;
-            info.source = file.relativePath;
-            blobs.push_back(info);
-            file.blobId = blobs.size() - 1;
+            file.blobId = makeBlobInfo(file);
             continue;
         }
 
@@ -54,12 +62,7 @@ void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vect
                 auto& file = files[FileInfoIndices[idx]];
                 if (idx == 0)
                 {
-                    BlobInfo info;
-                    info.hash64 = sameHashFiles.first;
-                    info.size = file.size;
-                    info.source = file.relativePath;
-                    blobs.push_back(info);
-                    file.blobId = blobs.size() - 1;
+                    file.blobId = makeBlobInfo(file, sameHashFiles.first);
                     processedFiles.push_back(&file);
                 }
                 else
@@ -79,12 +82,7 @@ void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vect
                     if (!matched)
                     {
                         // unique file, the same hash but never meet a equal file
-                        BlobInfo info;
-                        info.hash64 = sameHashFiles.first;
-                        info.size = file.size;
-                        info.source = file.relativePath;
-                        blobs.push_back(info);
-                        file.blobId = blobs.size() - 1;
+                        file.blobId = makeBlobInfo(file, sameHashFiles.first);
                         processedFiles.push_back(&file);
                     }
 
