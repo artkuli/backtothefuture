@@ -1,5 +1,3 @@
-#pragma once
-
 #include "pack.hpp"
 #include "unpack.hpp"
 #include "config.hpp"
