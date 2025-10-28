@@ -1,6 +1,7 @@
 #include "duplicateresolver.hpp"
 
 #include "config.hpp"
+#include "hasher.hpp"
 
 #include <vector>
 #include <future>

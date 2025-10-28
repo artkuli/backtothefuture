@@ -11,7 +11,7 @@ std::string bytes(std::initializer_list<uint8_t> b) {
     return s;
 }
 
-std::filesystem::__cxx11::path makeTempDir(const std::string &stem) {
+std::filesystem::path makeTempDir(const std::string &stem) {
     auto base = std::filesystem::temp_directory_path()
                 / (stem + "-" + std::to_string(std::rand()));
     std::filesystem::create_directories(base);

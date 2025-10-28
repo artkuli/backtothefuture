@@ -5,6 +5,7 @@
 
 
 struct Config;
+class IArchiveReader;
 
 class Unarchiver
 {

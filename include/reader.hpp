@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <filesystem>
-#include <fstream>
-#include <stdexcept>
+#include <istream>
 #include <string>
 
 class Reader {

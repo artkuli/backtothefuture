@@ -1,7 +1,6 @@
 #pragma once
 
 #include "config.hpp"
-#include "hasher.hpp"
 #include "filescomparer.hpp"
 #include "types.hpp"
 

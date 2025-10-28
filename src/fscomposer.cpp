@@ -1,5 +1,6 @@
 #include "fscomposer.hpp"
 
+#include "utils.hpp"
 #include "types.hpp"
 
 std::string errorWithPath(const std::string& msg, const std::filesystem::path& p) {

@@ -2,7 +2,6 @@
 
 #include "archiver.hpp"
 #include "scan.hpp"
-#include "hasher.hpp"
 #include "filescomparer.hpp"
 #include "duplicateresolver.hpp"
 #include "archivewriter.hpp"

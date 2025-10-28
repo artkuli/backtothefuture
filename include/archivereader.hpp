@@ -2,6 +2,9 @@
 
 #include "reader.hpp"
 #include <vector>
+#include <fstream>
+#include <memory>
+#include <filesystem>
 
 struct Header;
 struct DirInfo;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "archivereader.hpp"
-#include "utils.hpp"
 
 #include <filesystem>
 #include <vector>
