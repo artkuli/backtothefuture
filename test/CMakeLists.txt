@@ -1,9 +1,14 @@
 set(TEST_SOURCES
-  test_pack.cpp
+
 )
 
 add_executable(tests ${TEST_SOURCES}
   hasher_test.cpp
+  writer_test.cpp
+  reader_test.cpp
+  scan_test.cpp
+  test_utils.hpp
+  test_utils.cpp
 )
 target_link_libraries(tests
   PRIVATE

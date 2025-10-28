@@ -59,7 +59,9 @@ TEST_F(FNV1aHasherTest, KnownVectorsSmallText) {
 
 TEST_F(FNV1aHasherTest, FullByteRange256) {
     std::vector<unsigned char> data(256);
-    for (size_t i = 0; i < 256; ++i) data[i] = static_cast<unsigned char>(i);
+    for (size_t i = 0; i < 256; ++i) {
+        data[i] = static_cast<unsigned char>(i);
+    }
     auto p = WriteTempFile(data, "range256");
     EXPECT_EQ(hasher->hash_file(p), 0x4242DC5249C33625ULL);
     std::filesystem::remove(p);
@@ -68,7 +70,9 @@ TEST_F(FNV1aHasherTest, FullByteRange256) {
 TEST_F(FNV1aHasherTest, LargerThanInternalBuffer) {
     const size_t N = 9 * 1024 * 1024;
     std::vector<unsigned char> data(N);
-    for (size_t i = 0; i < N; ++i) data[i] = static_cast<unsigned char>(i & 0xFF);
+    for (size_t i = 0; i < N; ++i) {
+        data[i] = static_cast<unsigned char>(i & 0xFF);
+    }
     auto p = WriteTempFile(data, "big_9MiB");
 
     EXPECT_EQ(hasher->hash_file(p), 0x1BC4E941BED22325ULL); // Replace with actual expected hash);
@@ -77,23 +81,23 @@ TEST_F(FNV1aHasherTest, LargerThanInternalBuffer) {
 }
 
 TEST_F(FNV1aHasherTest, ThrowsOnMissingFile) {
-    auto p = std::filesystem::temp_directory_path() / "definitely_missing_fnv1a_test.bin";
+    auto p = std::filesystem::temp_directory_path() / "missing_file";
     ASSERT_FALSE(std::filesystem::exists(p));
     try {
         hasher->hash_file(p);
         FAIL() << "Expected std::runtime_error";
     } catch (const std::runtime_error& e) {
         std::string what = e.what();
-        EXPECT_NE(what.find("open failed"), std::string::npos) << what;
+        EXPECT_NE(what.find("Open failed"), std::string::npos) << what;
         EXPECT_NE(what.find(p.string()), std::string::npos) << what;
     } catch (...) {
         FAIL() << "Expected std::runtime_error";
     }
 }
 
-TEST_F(FNV1aHasherTest, DeterministicAcrossRuns) {
+TEST_F(FNV1aHasherTest, TheSameData) {
     std::vector<unsigned char> data = {'T','e','s','t','!','\n',0x00,0x7F};
-    auto p = WriteTempFile(data, "determinism");
+    auto p = WriteTempFile(data, "thesamedata");
     const auto h1 = hasher->hash_file(p);
     const auto h2 = hasher->hash_file(p);
     EXPECT_EQ(h1, h2);
