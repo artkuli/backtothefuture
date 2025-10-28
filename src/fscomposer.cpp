@@ -23,7 +23,7 @@ void FSComposer::composeDirectories(const std::vector<DirInfo> &dirs, const std:
         std::filesystem::create_directories(outDir, ec);
         if (ec)
         {
-            throw std::runtime_error(errorWithPath("Not able to create directory", outDir));
+            throw std::runtime_error(errorWithPath("Cannot create directory", outDir));
         }
 
         applyPermissions(outDir, d.permissions);
@@ -108,7 +108,7 @@ void FSComposer::applyPermissions(const std::filesystem::path &p, uint32_t mode)
     std::filesystem::permissions(p, utils::bits_to_perms(mode),
                                  std::filesystem::perm_options::replace, ec);
     if (ec) {
-        throw std::runtime_error(errorWithPath("Not able to set permissions", p));
+        throw std::runtime_error(errorWithPath("Cannot set permissions", p));
     }
 }
 
@@ -117,6 +117,6 @@ void FSComposer::applyMtime(const std::filesystem::path &p, uint64_t mtime) cons
     std::error_code ec;
     std::filesystem::last_write_time(p, utils::time_t_to_filetime(mtime), ec);
     if (ec) {
-        throw std::runtime_error(errorWithPath("Not able to set modification time", p));
+        throw std::runtime_error(errorWithPath("Cannot set modification time", p));
     }
 }

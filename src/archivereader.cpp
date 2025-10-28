@@ -96,7 +96,7 @@ std::unique_ptr<std::istream> BinaryArchiveReader::openBlobStream(uint64_t dataO
     is->seekg(static_cast<std::streamoff>(dataOffset), std::ios::beg);
 
     if (!*is) {
-        throw std::runtime_error("Not able to seek to blob data offset");
+        throw std::runtime_error("Cannot seek to blob data offset");
     }
     return is;
 }
