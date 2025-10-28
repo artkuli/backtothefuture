@@ -2,7 +2,6 @@
 
 
 #include "types.hpp"
-#include "writer.hpp"
 #include "archivewriter.hpp"
 #include <iostream>
 

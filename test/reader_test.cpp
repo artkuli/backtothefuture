@@ -6,11 +6,9 @@
 #include <cstdint>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <stdexcept>
 
 using namespace std;
-
 
 TEST(ReaderTest, ReadU32) {
     std::string data = bytes({0xD4, 0xC3, 0xB2, 0xA1});
