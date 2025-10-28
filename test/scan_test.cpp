@@ -9,8 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-const std::string testStem = "fsscanner_test";
+#include <iostream>
 
 static std::filesystem::path writeFile(const std::filesystem::path& dir,
                                        const std::string& rel,
@@ -29,7 +28,7 @@ static bool hasDirRel(const std::vector<DirInfo>& dirs, const std::string& rel) 
 }
 
 TEST(FsScannerTest, ScansDirsAndFilesAndGroupsBySize) {
-    auto root = makeTempDir(testStem);
+    auto root = makeTempDir("fsscaner-ScansDirsAndFilesAndGroupsBySize");
     auto pA = writeFile(root, "a.txt", "abc");        // 3
     auto pB = writeFile(root, "d1/b.txt", "xyz");     // 3
     auto pC = writeFile(root, "d1/c.bin", "12345");   // 5
@@ -79,7 +78,7 @@ TEST(FsScannerTest, ScansDirsAndFilesAndGroupsBySize) {
 }
 
 TEST(FsScannerTest, ThrowsWhenFileExceedsMaxFileSize) {
-    auto root = makeTempDir(testStem);
+    auto root = makeTempDir("fsscaner-ThrowsWhenFileExceedsMaxFileSize");
 
     writeFile(root, "big.bin", "12345");
 
