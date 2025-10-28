@@ -13,8 +13,8 @@ const int kInvalidUsage = 2;
 void printHelp(const std::string& appName)
 {
     std::cerr << "Usage:\n"
-              << "  " << appName << " pack <input_dir> <archive.bttf>\n"
-              << "  " << appName << " unpack <archive.bttf> <output_dir>\n";
+              << "  " << appName << " pack <input_dir> <archive.bin>\n"
+              << "  " << appName << " unpack <archive.bin> <output_dir>\n";
 }
 
 int main(int argc, char** argv) {
@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
         Config config;
         if (cmd == kPackCmd){
             if (argc != 4) {
-                std::cerr << "The command 'pack' requires <input_dir> <archive.bttf>\n";
+                std::cerr << "The command 'pack' requires <input_dir> <archive.bin>\n";
                 return kInvalidUsage;
             }
             std::filesystem::path in = std::filesystem::path(argv[2]);
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
             return packCmd(config, in, out);
         } else if (cmd == kUnpackCmd){
             if (argc != 4) {
-                std::cerr << "The command 'unpack' requires <archive.bttf> <output_dir>\n";
+                std::cerr << "The command 'unpack' requires <archive.bin> <output_dir>\n";
                 return kInvalidUsage;;
             }
             std::filesystem::path in = std::filesystem::path(argv[2]);
