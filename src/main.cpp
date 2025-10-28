@@ -2,6 +2,7 @@
 
 #include "pack.hpp"
 #include "unpack.hpp"
+#include "config.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -25,23 +26,25 @@ int main(int argc, char** argv) {
             return kInvalidUsage;
         }
         std::string cmd = argv[1];
+        Config config;
         if (cmd == kPackCmd){
             if (argc != 4) {
-                std::cerr << "pack needs <input_dir> <archive.bttf>\n";
+                std::cerr << "The command 'pack' requires <input_dir> <archive.bttf>\n";
                 return kInvalidUsage;
             }
             std::filesystem::path in = std::filesystem::path(argv[2]);
             std::filesystem::path out= std::filesystem::path(argv[3]);
 
-            return packager::pack(in, out);
+            return packCmd(config, in, out);
         } else if (cmd == kUnpackCmd){
             if (argc != 4) {
-                std::cerr << "unpack needs <archive.bttf> <output_dir>\n";
+                std::cerr << "The command 'unpack' requires <archive.bttf> <output_dir>\n";
                 return kInvalidUsage;;
             }
             std::filesystem::path in = std::filesystem::path(argv[2]);
             std::filesystem::path out= std::filesystem::path(argv[3]);
-            return Unpackager::unpack(in, out);
+
+            return unpackCmd(config, in, out);
         } else {
             std::cerr << "Unknown command: " << cmd << "\n";
             printHelp(argv[0]);

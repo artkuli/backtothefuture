@@ -1,26 +1,14 @@
 #pragma once
 
 #include <cstdint>
-#include <fstream>
 #include <filesystem>
-
-struct Header;
+#include <fstream>
+#include <stdexcept>
+#include <string>
 
 class Reader {
 public:
-    Reader(const std::filesystem::path& inputPath);
-    bool isOpen() const;
-    std::streampos currentPos();;
-
-    Header readHeader();
-    std::ifstream& stream();
-
-    uint32_t read_u32(std::ifstream &stream);
-    uint64_t read_u64(std::ifstream &stream);
-    std::string read_string(std::ifstream &stream);
-
-private:
-    std::ifstream m_in;
-
-
+    uint32_t readU32(std::istream& stream);
+    uint64_t readU64(std::istream& stream);
+    std::string readString(std::istream& stream);
 };

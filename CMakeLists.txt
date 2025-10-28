@@ -18,6 +18,10 @@ set(HEADERS
   include/archiver.hpp
   include/reader.hpp
   include/utils.hpp
+  include/archivereader.hpp
+  include/archivewriter.hpp
+  include/fscomposer.hpp
+  include/config.hpp
 )
 
 add_library(core
@@ -30,7 +34,13 @@ add_library(core
   src/archiver.cpp
   src/writer.cpp
   src/reader.cpp
-  utils.cpp
+  src/utils.cpp
+  src/archivereader.cpp
+  src/archivewriter.cpp
+  src/fscomposer.cpp
+
+  include/unarchiver.hpp
+  src/unarchiver.cpp
 )
 target_sources(core
   PUBLIC

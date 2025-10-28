@@ -1,20 +1,20 @@
 #include "duplicateresolver.hpp"
 
-#include <fstream>
+#include "config.hpp"
+
 #include <vector>
 #include <future>
-#include <iostream>
 
 constexpr uint64_t kNoHashSentinel = 0;
 
-DuplicateResolver::DuplicateResolver(IHasher &hasher, IFilesComparer &cfilesComparer)
-    : m_hasher(hasher)
+DuplicateResolver::DuplicateResolver(const Config& config, IFilesComparer &cfilesComparer)
+    : m_config(config)
     , m_filesComparer(cfilesComparer)
 {
 
 }
 
-void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vector<FileEntry> &files, const std::unordered_map<uint64_t, std::vector<size_t> > &filesBySize, std::vector<BlobInfo>& blobs)
+void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vector<FileInfo> &files, const std::unordered_map<uint64_t, std::vector<size_t> > &filesBySize, std::vector<BlobInfo>& blobs)
 {
     for (auto& keyValue : filesBySize) {
         auto &indices = keyValue.second;
@@ -34,7 +34,7 @@ void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vect
         for (auto &idx : indices) {
             futures.push_back(std::async(std::launch::async, [&, idx]() -> std::pair<uint64_t, size_t> {
                 auto& entry = files[idx];
-                FNV1aHasher hasher;               
+                FNV1aHasher hasher(m_config.chunkSize);
                 return {hasher.hash_file(entry.fullPath), idx};
             }));
         }
@@ -46,13 +46,12 @@ void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vect
             hashToFileEntries[res.first].push_back(res.second);
         }
 
-
         for (auto& sameHashFiles : hashToFileEntries) {
-            auto& fileEntryIndices = sameHashFiles.second;
-            std::vector<FileEntry*> processedFiles;
-            for (int idx = 0; idx < fileEntryIndices.size(); ++idx)
+            auto& FileInfoIndices = sameHashFiles.second;
+            std::vector<FileInfo*> processedFiles;
+            for (int idx = 0; idx < FileInfoIndices.size(); ++idx)
             {
-                auto& file = files[fileEntryIndices[idx]];
+                auto& file = files[FileInfoIndices[idx]];
                 if (idx == 0)
                 {
                     BlobInfo info;
@@ -69,11 +68,10 @@ void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vect
                     for (auto* processedFile : processedFiles)
                     {
                         if (m_filesComparer.areEqual(inputDir / file.relativePath,
-                                                     inputDir / processedFile->relativePath,
-                                                   8 << 20))
+                                                  inputDir / processedFile->relativePath,
+                                                  m_config.chunkSize))
                         {
                             file.blobId = processedFile->blobId;;
-                            std::cout << "File" << file.fullPath.string() << " Equal with=" << processedFile->fullPath.string() << std::endl;
                             matched = true;
                             break;
                         }
@@ -94,5 +92,4 @@ void DuplicateResolver::resolve(const std::filesystem::path& inputDir, std::vect
             }
         }
     }
-
 }

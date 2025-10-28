@@ -2,18 +2,20 @@
 
 #include <vector>
 #include <filesystem>
+#include "archivewriter.hpp"
 
-struct DirEntry;
-struct FileEntry;
+struct DirInfo;
+struct FileInfo;
 struct BlobInfo;
 
 class Archiver {
 public:
-    Archiver() = default;
+    Archiver(IArchiveWriter& writer);
 
-    bool archive(const std::vector<DirEntry> &dirs,
-                 const std::vector<FileEntry> &files,
+    bool archive(const std::vector<DirInfo> &dirs,
+                 const std::vector<FileInfo> &files,
                  const std::vector<BlobInfo> &blobs,
-                 const std::filesystem::path &inputDir,
-                 const std::filesystem::path &archivePath);
+                 const std::filesystem::path &inputDir);
+private:
+    IArchiveWriter& m_archiveWriter;
 };

@@ -2,9 +2,8 @@
 
 #include <filesystem>
 
-namespace Unpackager
-{
+struct Config;
 
-int unpack(const std::filesystem::path& archive_path, const std::filesystem::path& output_dir);
-
-}
+int unpackCmd(const Config& config,
+           const std::filesystem::path& archive_path,
+           const std::filesystem::path& output_dir);

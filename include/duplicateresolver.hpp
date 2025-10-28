@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.hpp"
 #include "hasher.hpp"
 #include "filescomparer.hpp"
 #include "types.hpp"
@@ -10,10 +11,10 @@
 class DuplicateResolver
 {
 public:
-    DuplicateResolver(IHasher& hasher, IFilesComparer &cfilesComparer);
+    DuplicateResolver(const Config& config, IFilesComparer &cfilesComparer);
     
-    void resolve(const std::filesystem::path& inputDir, std::vector<FileEntry> &files, const std::unordered_map<uint64_t, std::vector<size_t>> &filesBySize, std::vector<BlobInfo> &blobs);
+    void resolve(const std::filesystem::path& inputDir, std::vector<FileInfo> &files, const std::unordered_map<uint64_t, std::vector<size_t>> &filesBySize, std::vector<BlobInfo> &blobs);
 private:
-    IHasher& m_hasher;
+    const Config& m_config;
     IFilesComparer& m_filesComparer;
 };

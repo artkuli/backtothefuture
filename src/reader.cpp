@@ -1,77 +1,54 @@
 #include "reader.hpp"
+#include <limits>
 
-#include "types.hpp"
+namespace {
 
-
-Reader::Reader(const std::filesystem::__cxx11::path &inputPath) : m_in(inputPath)
-{
-
-}
-
-bool Reader::isOpen() const
-{
-    return m_in.is_open();
-}
-
-std::streampos Reader::currentPos()
-{
-    return m_in.tellg();
-}
-
-Header Reader::readHeader()
-{
-    Header header;
-    header.version = read_u32(m_in);
-    if(header.version != 1) {
-        throw std::runtime_error("Nieobsługiwana wersja");
-    }
-    header.dirCount = read_u64(m_in);
-    header.fileCount = read_u64(m_in);
-    header.blobCount = read_u64(m_in);
-    header.dirTableOff  = read_u64(m_in);
-    header.fileTableOff = read_u64(m_in);
-    header.blobTableOff = read_u64(m_in);
-    header.blobDataOff  = read_u64(m_in);
-    return header;
-}
-
-std::ifstream& Reader::stream()
-{
-    return m_in;
-}
-
-uint32_t Reader::read_u32(std::ifstream &stream)
-{
-    unsigned char b[4];
-    stream.read((char*)b,4);
-    if(!stream) {
-        throw std::runtime_error("Corrupted Archive");
-    }
-    return (uint32_t)b[0]
-           | ((uint32_t)b[1]<<8)
-           | ((uint32_t)b[2]<<16)
-           | ((uint32_t)b[3]<<24);
-}
-
-uint64_t Reader::read_u64(std::ifstream &stream)
-{
-    unsigned char b[8];
-    stream.read((char*)b,8);
-    if(!stream)
+template <typename T>
+void readExact(std::istream& is, T* ptr, std::size_t bytes) {
+    is.read(reinterpret_cast<char*>(ptr), static_cast<std::streamsize>(bytes));
+    if (!is)
     {
         throw std::runtime_error("Corrupted Archive");
     }
-    uint64_t v=0;
-    for(int i=0;i<8;i++) {
-        v |= ((uint64_t)b[i]) << (8 * i);
+}
+
+inline uint32_t le32(const unsigned char b[4]) {
+    return (uint32_t)b[0]
+           | ((uint32_t)b[1] << 8)
+           | ((uint32_t)b[2] << 16)
+           | ((uint32_t)b[3] << 24);
+}
+
+inline uint64_t le64(const unsigned char b[8]) {
+    uint64_t v = 0;
+    for (int i = 0; i < 8; ++i) {
+        v |= (uint64_t)b[i] << (8 * i);
     }
     return v;
 }
 
-std::string Reader::read_string(std::ifstream &stream)
+} // anonymous namespace
+
+
+uint32_t Reader::readU32(std::istream& stream)
 {
-    uint32_t n = read_u32(stream);
-    std::string s(n, '\0');
-    m_in.read(&s[0], std::streamsize(n));
+    unsigned char b[4];
+    readExact(stream, b, 4);
+    return le32(b);
+}
+
+uint64_t Reader::readU64(std::istream& stream) {
+    unsigned char b[8];
+    readExact(stream, b, 8);
+    return le64(b);
+}
+
+std::string Reader::readString(std::istream& stream) {
+    const uint32_t n = readU32(stream);
+    std::string s;
+    s.resize(n);
+    if (n) {
+        readExact(stream, &s[0], n);
+    }
     return s;
 }

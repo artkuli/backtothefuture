@@ -3,7 +3,8 @@ set(TEST_SOURCES
 )
 
 add_executable(tests ${TEST_SOURCES}
-  hasher_test.cpp)
+  hasher_test.cpp
+)
 target_link_libraries(tests
   PRIVATE
     core

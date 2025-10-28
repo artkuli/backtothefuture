@@ -5,57 +5,57 @@
 #include "hasher.hpp"
 #include "filescomparer.hpp"
 #include "duplicateresolver.hpp"
+#include "archivewriter.hpp"
+#include "config.hpp"
 
 #include <iostream>
 
 #include <vector>
 #include <cstring>
 
-namespace packager
+int packCmd(const Config& config, const std::filesystem::path &inputDir, const std::filesystem::path &archivePath)
 {
+    if (!std::filesystem::exists(inputDir) || !std::filesystem::is_directory(inputDir)) {
+        std::cerr << "Invalid path to the input directory: " << inputDir.string() << std::endl;
+        return 1;
+    }
 
-int pack(const std::filesystem::path &input_dir, const std::filesystem::path &archive_path)
-{
-    std::vector<FileEntry> files;
-    std::vector<DirEntry> dirs;
+    if (!archivePath.has_parent_path()) {
+        if (!std::filesystem::create_directories(archivePath.parent_path())) {
+            std::cerr << "An error occurred while trying to create directories for: " << archivePath.parent_path() << std::endl;
+            return 1;
+        }
+    }
+
+    std::vector<FileInfo> files;
+    std::vector<DirInfo> dirs;
     std::vector<BlobInfo> blobs;
     std::unordered_map<uint64_t, std::vector<size_t>> filesBySize;
 
-    FsScanner scanner;
-    scanner.scan(input_dir, dirs, files, filesBySize);
+    std::cout << "Starting scanning directory: " << inputDir << std::endl;
 
-    std::cout << "Scanned " << dirs.size() << " dirs and " << files.size() << " files." << std::endl;
+    FsScanner scanner(config.maxFileSize);
+    scanner.scan(inputDir, dirs, files, filesBySize);
 
+    if (files.size() > config.maxFilesCount) {
+        std::cerr << "The number of files exceeds the maximum allowed: " << files.size() << " > " << config.maxFilesCount << std::endl;
+        return 1;
+    }
+    std::cout << "Scanned " << files.size() << " files and " << dirs.size() << " directories" << std::endl;
+
+
+    std::cout << "Starting resolving duplicates..." << std::endl;
     DefaultFileComparer filesComparer;
-    FNV1aHasher hasher;
+    DuplicateResolver duplicateResolver(config, filesComparer);
+    duplicateResolver.resolve(inputDir, files, filesBySize, blobs);
 
-    DuplicateResolver duplicateResolver(hasher, filesComparer);
-    duplicateResolver.resolve(input_dir, files, filesBySize, blobs);
+    std::cout << "Detected " << blobs.size() << " unique blobs from " << files.size() << " files" << std::endl;
+    std::cout << "Starting archiving to " << archivePath << std::endl;
 
-    int idx = 0;
-    for (const auto &file : files){
-        std::cout <<"[" << idx << "]= "<< "Path: " << file.relativePath
-                  << " full=" << file.fullPath
-                  << " hash=" << blobs[file.blobId].hash64
-                  << " size=" << blobs[file.blobId].size
-                  << " perms=" << file.permissions
-                  << " source=" << blobs[file.blobId].source.string()
-                  << std::endl;
-        ++idx;
-    }
-    idx = 0;
-    for (const auto &blob : blobs){
-        std::cout <<"[" << idx << "]= "<< "Blob: size=" << blob.size
-                  << " hash=" << blob.hash64
-                  << " source=" << blob.source.string()
-                  << std::endl;
-        ++idx;
-    }
+    BinaryArchiveWriter archiveWriter(archivePath, config.chunkSize);
+    Archiver archiver(archiveWriter);
+    archiver.archive(dirs, files, blobs, inputDir);
 
-    Archiver archiver;
-    archiver.archive(dirs, files, blobs, input_dir, archive_path);
-
+    std::cout << "Archiving to file: " << archivePath.string() << " completed successfully" << std::endl;
     return 0;
-}
-
 }

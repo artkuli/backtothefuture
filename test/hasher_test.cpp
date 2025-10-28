@@ -13,7 +13,7 @@ protected:
     static std::unique_ptr<FNV1aHasher> hasher;
 
     static void SetUpTestSuite() {
-        hasher = std::make_unique<FNV1aHasher>();
+        hasher = std::make_unique<FNV1aHasher>(8 << 20);
     }
 
     static void TearDownTestSuite() {

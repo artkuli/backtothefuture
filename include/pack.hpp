@@ -2,9 +2,6 @@
 
 #include <filesystem>
 
-namespace packager
-{
+struct Config;
 
-int pack(const std::filesystem::path& input_dir, const std::filesystem::path& archive_path);
-
-}
+int packCmd(const Config& config, const std::filesystem::path& inputDir, const std::filesystem::path& archivePath);

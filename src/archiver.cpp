@@ -3,45 +3,48 @@
 
 #include "types.hpp"
 #include "writer.hpp"
+#include "archivewriter.hpp"
 #include <iostream>
 
-/*
-*   [header files_count=.. dirs_count=.. ]
-*   [dir entries = path, mtime, perms]
-*   [file entries, path, size, mtime, perms, source]
-*   [blobs files data ]
-*/
+Archiver::Archiver(IArchiveWriter &writer)
+    : m_archiveWriter(writer)
+{}
 
-bool Archiver::archive(const std::vector<DirEntry> &dirs,
-                       const std::vector<FileEntry> &files,
+bool Archiver::archive(const std::vector<DirInfo> &dirs,
+                       const std::vector<FileInfo> &files,
                        const std::vector<BlobInfo> &blobs,
-                       const std::filesystem::path &inputDir,
-                       const std::filesystem::path &archivePath)
+                       const std::filesystem::path &inputDir)
 {
-    if (!archivePath.has_parent_path()) {
-        if (!std::filesystem::create_directories(archivePath.parent_path())) {
-            std::cerr << "An error occurred while trying to create directories for: " << archivePath.parent_path() << std::endl;
-            return false;
-        }
-    }
-
-    Writer writer(archivePath);
-    if (!writer.isOpen()) {
-        std::cerr << "An error occurred while tried to open file: " << archivePath << std::endl;
+    if (!m_archiveWriter.isOpen()) {
+        std::cerr << "An error occurred while tried to open file" << std::endl;
         return false;
     }
-    auto headerPos = writer.currentPos();
-    writer.writeHeader(dirs.size(), files.size(), blobs.size());
+    auto headerPos = m_archiveWriter.currentPos();
+    Header header;
+    header.dirCount = dirs.size();
+    header.fileCount = files.size();
+    header.blobCount = blobs.size();
+    m_archiveWriter.writeHeader(header, headerPos);
 
-    auto dirTableOffset = writer.currentPos();
-    writer.writeDirs(dirs);
+    auto dirTableOffset = m_archiveWriter.currentPos();
+    m_archiveWriter.writeDirs(dirs);
 
-    auto fileTableOffset = writer.currentPos();
-    writer.writeFiles(files);
+    auto fileTableOffset = m_archiveWriter.currentPos();
+    m_archiveWriter.writeFiles(files);
 
-    auto blobTableOffset = writer.currentPos();
-    writer.writeBlobs(inputDir, blobs);
+    auto blobTableOffset = m_archiveWriter.currentPos();
+    auto blobOffsetPlaceHolders = m_archiveWriter.writeBlobsTable(blobs);
 
-    writer.updateOffsets(headerPos, dirTableOffset, fileTableOffset, blobTableOffset);
+    auto blobDataOffset = m_archiveWriter.currentPos();
+    m_archiveWriter.writeBlobs(inputDir, blobs, blobOffsetPlaceHolders);
+
+    header.dirTableOffset = dirTableOffset;
+    header.fileTableOffset = fileTableOffset;
+    header.blobTableOffset = blobTableOffset;
+    header.blobDataOffset = blobDataOffset;
+
+    // update offsets in header
+    m_archiveWriter.writeHeader(header, headerPos);
+
     return true;
 }
