@@ -48,7 +48,7 @@ void FSComposer::composeFiles(IArchiveReader& archive,
         }
 
         const auto& b = blobs[static_cast<size_t>(f.blobId)];
-        const auto outPath = resolvePath(rootDir, f.relativePath);
+        const auto outPath = resolvePath(rootDir, f.relativePath.string());
 
         if (!std::filesystem::exists(outPath.parent_path())) {
             throw std::runtime_error(errorWithPath("Parent directory does not exist for file", outPath));
